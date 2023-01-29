@@ -8,6 +8,8 @@ import {
   randomArrayElement,
   HSLToHex,
   saveText,
+  saveLS,
+  loadLS,
 } from "./utils.js";
 
 // создает рандомный градиент
@@ -65,7 +67,7 @@ const randomCoord = (params) => {
 const genFigure = (param) => {
   const el = param.el ?? ".generation";
   const id = randomInteger(1, 1000000);
-  const size = param.size ?? 300;
+  const size = Number(param.size) ?? 300;
   const center = size / 2;
   const size1_2 = size / 2;
   const size1_3 = size / 3;
@@ -80,23 +82,25 @@ const genFigure = (param) => {
   const font = param.font ?? "Helvetica";
 
   const countPolygon = param.countPolygon ?? 1;
-  const countDotPolygon = param.countDotPolygon ?? {
-    min: 7,
-    max: 9,
-  };
-  const radiusPolygon = param.radiusPolygon ?? {
+  const countDotPolygonMin = param.countDotPolygonMin ?? 7;
+  const countDotPolygonMax = param.countDotPolygon ?? 9;
+
+  const radiusPolygon = {
     min: size1_3 + size1_5 / 2,
     max: size1_2 - size1_5,
   };
 
   const polygons =
     param.polygons ??
-    newArray(countPolygon).map((v, i) => {
+    newArray(Number(countPolygon)).map((v, i) => {
       return {
         colors: randomColors({}),
         coords: randomCoord({
           size: size,
-          dots: countDotPolygon,
+          dots: {
+            min: Number(countDotPolygonMin),
+            max: Number(countDotPolygonMax),
+          },
           radius: radiusPolygon,
         }),
       };
@@ -161,7 +165,7 @@ const genFigure = (param) => {
 
   draw
     .circle(size1_20)
-    .move(center - size1_5 / 3 / 2, center - size1_5 * 1.3) // todo
+    .move(center - size1_20 / 2, center - size1_5 * 1.3) // todo
     .attr({ fill: "#fff" });
 
   const paramsFigure = JSON.stringify({
@@ -171,80 +175,75 @@ const genFigure = (param) => {
     text,
     font,
     countPolygon,
-    countDotPolygon,
-    radiusPolygon,
+    countDotPolygonMin,
+    countDotPolygonMax,
     polygons,
   });
 
   const svgFigure = document.querySelector(`#_${id}`).outerHTML;
 
   document.querySelector(`#_${id}`).addEventListener("click", () => {
-    saveText(`logo-${title}-${text}-${id}-params`, paramsFigure, "json");
     saveText(`logo-${title}-${text}-${id}`, svgFigure, "svg");
+    saveText(`logo-${title}-${text}-${id}-params`, paramsFigure, "json");
+  });
+};
+
+const updateFigure = () => {
+  const form = document.querySelector(".generation-forms");
+  const rawData = new FormData(form);
+  const data = {};
+  for (let [key, value] of rawData) {
+    data[key] = value;
+  }
+
+  setTimeout(() => {
+    saveLS(data);
+  }, 0);
+
+  document.querySelector(".generation").innerHTML = "";
+
+  newArray(Number(data.count))
+    .map(() => data)
+    .forEach((logoParam) => {
+      genFigure(logoParam);
+    });
+};
+
+const initParams = () => {
+  const params = loadLS();
+
+  if (params !== null) {
+    Object.entries(params).forEach(([k, v]) => {
+      document.querySelector(`[name=${k}]`).value = v;
+    });
+  }
+};
+
+const init = () => {
+  initParams();
+  updateFigure();
+};
+
+document
+  .querySelector(".generation-forms")
+  .addEventListener("input", updateFigure);
+
+document
+  .querySelector(".generation-forms")
+  .addEventListener("reset", updateFigure);
+
+document
+  .querySelector("[name='loadParams']")
+  .addEventListener("change", (event) => {
+    const uploadedFile = event.target.files[0];
+
+    const readFile = new FileReader();
+    readFile.onload = (e) => {
+      const contents = e.target.result;
+      const logoParam = JSON.parse(contents);
+      genFigure({ el: ".view-zone", ...logoParam });
+    };
+    readFile.readAsText(uploadedFile);
   });
 
-  return paramsFigure;
-};
-
-const save1 = {
-  size: 300,
-  title: "PG",
-  text: "front",
-  font: "Helvetica",
-  countPolygon: 1,
-  countDotPolygon: { min: 7, max: 9 },
-  radiusPolygon: { min: 130, max: 90 },
-  polygons: [
-    {
-      colors: ["#7c19e6", "#e219e6", "#e61983", "#e6191d"],
-      coords: [
-        [205, 224],
-        [272, 166],
-        [247, 84],
-        [138, 48],
-        [62, 85],
-        [55, 138],
-        [88, 239],
-        [205, 224],
-      ],
-    },
-  ],
-};
-
-const save2 = {
-  size: 300,
-  title: "LAJ",
-  text: "backend",
-  font: "Helvetica",
-  countPolygon: 1,
-  countDotPolygon: { min: 7, max: 9 },
-  radiusPolygon: { min: 130, max: 90 },
-  polygons: [
-    {
-      colors: ["#35e619", "#19e664", "#19e6ca", "#199be6"],
-      coords: [
-        [171, 262],
-        [270, 177],
-        [252, 148],
-        [203, 60],
-        [91, 63],
-        [52, 122],
-        [50, 200],
-        [103, 230],
-        [171, 262],
-      ],
-    },
-  ],
-};
-
-const saveLogos = [save1, save2];
-
-saveLogos.forEach((logoParam) => {
-  genFigure({ el: ".saves", ...logoParam });
-});
-
-newArray(4)
-  .map(() => ({}))
-  .forEach((logoParam) => {
-    genFigure(logoParam);
-  });
+init();

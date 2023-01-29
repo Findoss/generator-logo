@@ -12,13 +12,57 @@
       * {
         padding: 0px;
         margin: 0;
+        box-sizing: border-box;
       }
 
       body {
         background-color: #eee;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
       }
 
-      .saves,
+      svg {
+        cursor: pointer;
+      }
+
+      input,
+      button {
+        height: 30px;
+        padding: 5px;
+        text-align: center;
+      }
+
+      button {
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .header {
+        padding: 20px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .generation-forms {
+        width: 270px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+        background-color: #fff;
+      }
+
+      .generation-param {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .generation-param-title {
+        width: 100px;
+      }
+
       .generation {
         display: flex;
         flex-wrap: wrap;
@@ -28,11 +72,58 @@
         gap: 10px;
       }
 
-      svg {
-        cursor: pointer;
+      .view {
+        background-color: #fff;
+        width: 100%;
+        text-align: center;
       }
     </style>
-    <div class="saves"></div>
+    <div class="header">
+      <form class="generation-forms">
+        <div class="generation-param">
+          <div class="generation-param-title">count generation</div>
+          <input type="text" value="9" name="count" />
+        </div>
+        <div class="generation-param">
+          <div class="generation-param-title">size cover</div>
+          <input type="text" value="300" name="size" />
+        </div>
+        <div class="generation-param">
+          <div class="generation-param-title">title</div>
+          <input type="text" value="AAA" name="title" />
+        </div>
+        <div class="generation-param">
+          <div class="generation-param-title">side text</div>
+          <input type="text" value="text" name="text" />
+        </div>
+        <div class="generation-param">
+          <div class="generation-param-title">font name</div>
+          <input type="text" value="Helvetica" name="font" />
+        </div>
+        <div class="generation-param">
+          <div class="generation-param-title">count polygon</div>
+          <input type="text" value="1" name="countPolygon" />
+        </div>
+        <div class="generation-param">
+          <div class="generation-param-title">min count dots polygon</div>
+          <input type="text" value="7" name="countDotPolygonMin" />
+        </div>
+        <div class="generation-param">
+          <div class="generation-param-title">max count dots polygon</div>
+          <input type="text" value="9" name="countDotPolygonMax" />
+        </div>
+        <button type="reset">reset</button>
+        <button>generation</button>
+      </form>
+      <div class="view">
+        <br />
+        <input type="file"accept=".json" name="loadParams" class="load-logo">
+          
+        </input>
+        <div class="view-zone"></div>
+      </div>
+    </div>
+
     <hr />
     <div class="generation"></div>
     <script type="module" src="./index.js"></script>

@@ -92,3 +92,11 @@ export const saveText = (name, content, ext) => {
   link.click();
   URL.revokeObjectURL(link.href);
 };
+
+export const saveLS = (value) => {
+  localStorage.setItem("params-gen", JSON.stringify(value));
+};
+
+export const loadLS = () => {
+  return JSON.parse(localStorage.getItem("params-gen"));
+};
