@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVG Gen logo</title>
+    <title>Gen logo for project/title>
     <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.1.2/dist/svg.min.js"></script>
   </head>
   <body>
@@ -81,8 +81,8 @@
     <div class="header">
       <form class="generation-forms">
         <div class="generation-param">
-          <div class="generation-param-title">count generation</div>
-          <input type="text" value="9" name="count" />
+          <div class="generation-param-title">background color</div>
+          <input type="text" value="none" name="backgroundColor" />
         </div>
         <div class="generation-param">
           <div class="generation-param-title">size cover</div>
@@ -101,31 +101,19 @@
           <input type="text" value="Helvetica" name="font" />
         </div>
         <div class="generation-param">
-          <div class="generation-param-title">count polygon</div>
-          <input type="text" value="1" name="countPolygon" />
-        </div>
-        <div class="generation-param">
           <div class="generation-param-title">min count dots polygon</div>
-          <input type="text" value="7" name="countDotPolygonMin" />
+          <input type="text" value="12" name="countDotPolygonMin" />
         </div>
         <div class="generation-param">
           <div class="generation-param-title">max count dots polygon</div>
-          <input type="text" value="9" name="countDotPolygonMax" />
+          <input type="text" value="16" name="countDotPolygonMax" />
         </div>
         <button type="reset">reset</button>
-        <button>generation</button>
+        <button class="gen">generation</button>
+        <button class="save">save</button>
       </form>
-      <div class="view">
-        <br />
-        <input type="file"accept=".json" name="loadParams" class="load-logo">
-          
-        </input>
-        <div class="view-zone"></div>
-      </div>
+      <div class="generation"></div>
     </div>
-
-    <hr />
-    <div class="generation"></div>
     <script type="module" src="./index.js"></script>
   </body>
 </html>

@@ -84,6 +84,12 @@ export const generateHslaColors = (saturation, lightness, alpha, amount) => {
   return colors;
 };
 
+/**
+ * Сохраняет файл с текстовыми данными
+ * @param name имя файла
+ * @param content содержимое
+ * @param ext расширение
+ */
 export const saveText = (name, content, ext) => {
   const link = document.createElement("a");
   const file = new Blob([content], { type: "text/plain" });
@@ -93,10 +99,3 @@ export const saveText = (name, content, ext) => {
   URL.revokeObjectURL(link.href);
 };
 
-export const saveLS = (value) => {
-  localStorage.setItem("params-gen", JSON.stringify(value));
-};
-
-export const loadLS = () => {
-  return JSON.parse(localStorage.getItem("params-gen"));
-};

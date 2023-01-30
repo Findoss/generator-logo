@@ -8,11 +8,16 @@ import {
   randomArrayElement,
   HSLToHex,
   saveText,
-  saveLS,
-  loadLS,
 } from "./utils.js";
 
-// создает рандомный градиент
+const saveLS = (value) => {
+  localStorage.setItem("params-gen", JSON.stringify(value));
+};
+
+const loadLS = () => {
+  return JSON.parse(localStorage.getItem("params-gen"));
+};
+
 const randomColors = (params) => {
   const l = params.l ?? 80; // насыщенность
   const s = params.s ?? 50; // яркость
@@ -38,7 +43,6 @@ const randomColors = (params) => {
   return [startColor, ...colors].map((v) => HSLToHex(v));
 };
 
-//
 const randomCoord = (params) => {
   const size = params.size ?? 300;
   const radius = params.radius ?? {
@@ -69,7 +73,6 @@ const genFigure = (param) => {
   const id = randomInteger(1, 1000000);
   const size = Number(param.size) ?? 300;
   const center = size / 2;
-  const size1_2 = size / 2;
   const size1_3 = size / 3;
   const size2_3 = (size / 3) * 2;
   const size1_5 = size / 5;
@@ -81,41 +84,45 @@ const genFigure = (param) => {
   const text = param.text ?? "";
   const font = param.font ?? "Helvetica";
 
-  const countPolygon = param.countPolygon ?? 1;
+  const sizeFontTitleConf = [0.4, 1.3, 1.2, 1, 0.8, 0.6];
+  const sizeFontTextConf = [1, 1.3, 1.2, 1.1];
+
+  const sizeFontTitle =
+    size1_5 * sizeFontTitleConf[title.length] || size1_5 * sizeFontTitleConf[0];
+
+  const sizeFontText =
+    size1_14 * sizeFontTextConf[text.length] || size1_14 * sizeFontTextConf[0];
+
   const countDotPolygonMin = param.countDotPolygonMin ?? 7;
   const countDotPolygonMax = param.countDotPolygon ?? 9;
 
   const radiusPolygon = {
-    min: size1_3 + size1_5 / 2,
-    max: size1_2 - size1_5,
+    min: size1_3 + size1_20,
+    max: size1_3 + size1_20,
   };
 
-  const polygons =
-    param.polygons ??
-    newArray(Number(countPolygon)).map((v, i) => {
-      return {
-        colors: randomColors({}),
-        coords: randomCoord({
-          size: size,
-          dots: {
-            min: Number(countDotPolygonMin),
-            max: Number(countDotPolygonMax),
-          },
-          radius: radiusPolygon,
-        }),
-      };
-    });
+  const polygon = param.polygon ?? {
+    colors: randomColors({}),
+    coords: randomCoord({
+      size: size,
+      dots: {
+        min: Number(countDotPolygonMin),
+        max: Number(countDotPolygonMax),
+      },
+      radius: radiusPolygon,
+    }),
+  };
 
-  const backgroundColor = param.backgroundColor ?? "#fff";
+  const backgroundColor = param.backgroundColor ?? "none";
 
-  let draw = SVG()
-    .addTo(el)
-    .size(size, size)
-    .attr({ id: `_${id}` });
+  (() => {
+    let draw = SVG()
+      .addTo(el)
+      .size(size, size)
+      .attr({ id: `_${id}` });
 
-  draw.rect(size, size).attr({ fill: backgroundColor });
+    draw.rect(size, size).attr({ fill: backgroundColor });
 
-  polygons.forEach((polygon) => {
     const gradient = draw
       .gradient("linear", (ctx) => {
         polygon.colors.forEach((color, i) =>
@@ -125,88 +132,254 @@ const genFigure = (param) => {
       .from(0, 0)
       .to(1, 1);
 
-    draw.polyline(polygon.coords.join()).fill(gradient).stroke({
-      color: gradient,
-      width: size1_5,
-      linecap: "round",
-      linejoin: "round",
-    });
-  });
+    draw
+      .polyline(polygon.coords.join())
+      .fill(gradient)
+      .stroke({
+        color: gradient,
+        width: size1_5,
+        linecap: "round",
+        linejoin: "round",
+      })
+      .animate({
+        duration: 20000,
+        times: Infinity,
+      })
+      .ease("-")
+      .rotate(360);
 
-  draw.circle(size2_3).move(size1_6, size1_6).attr({ fill: "#000" });
+    draw.circle(size2_3).move(size1_6, size1_6).attr({ fill: "#000" });
 
-  draw
-    .text(title.toUpperCase())
-    .move(center, center)
-    .font({
-      family: font,
-      size: `${size1_5}px`,
-      anchor: "middle",
-      leading: "1.5em",
-      "dominant-baseline": "middle",
-      x: "50%",
-      y: "52%",
-    })
-    .fill("#fff");
+    draw
+      .text(title.toUpperCase())
+      .move(center, center)
+      .font({
+        family: font,
+        size: `${sizeFontTitle}px`,
+        anchor: "middle",
+        "dominant-baseline": "middle",
+        x: "50%",
+        y: "50%",
+      })
+      .fill("#fff");
 
-  draw
-    .text(text.toUpperCase())
-    .move(center, center)
-    .font({
-      family: font,
-      size: `${size1_14}px`,
-      anchor: "middle",
-      leading: "1.5em",
-      "dominant-baseline": "middle",
-      x: "50%",
-      y: "67%",
-    })
-    .fill("#fff");
+    draw
+      .text(text.toUpperCase())
+      .move(center, center)
+      .font({
+        family: font,
+        size: `${sizeFontText}px`,
+        anchor: "middle",
+        "dominant-baseline": "middle",
+        x: "50%",
+        y: "64%",
+      })
+      .fill("#fff");
+  })();
 
-  draw
-    .circle(size1_20)
-    .move(center - size1_20 / 2, center - size1_5 * 1.3) // todo
-    .attr({ fill: "#fff" });
+  (() => {
+    let draw = SVG()
+      .addTo(el)
+      .size(size / 3, size / 3)
+      .attr({ id: `_${id}` });
 
-  const paramsFigure = JSON.stringify({
-    id,
-    size,
-    title,
-    text,
-    font,
-    countPolygon,
-    countDotPolygonMin,
-    countDotPolygonMax,
-    polygons,
-  });
+    draw.rect(size / 3, size / 3).attr({ fill: backgroundColor });
+
+    const gradient = draw
+      .gradient("linear", (ctx) => {
+        polygon.colors.forEach((color, i) =>
+          ctx.stop(i / polygon.colors.length, color)
+        );
+      })
+      .from(0, 0)
+      .to(1, 1);
+
+    draw
+      .circle(size / 3)
+      .move(0, 0)
+      .attr({ fill: gradient })
+      .animate({
+        duration: 20000,
+        times: Infinity,
+      })
+      .ease("-")
+      .rotate(360);
+
+    draw
+      .circle(size2_3 / 3)
+      .move(size1_6 / 3, size1_6 / 3)
+      .attr({ fill: "#000" });
+
+    draw
+      .text(title.toUpperCase())
+      .move(center, center)
+      .font({
+        family: font,
+        size: `${sizeFontTitle / 3}px`,
+        anchor: "middle",
+        "dominant-baseline": "middle",
+        x: "50%",
+        y: "50%",
+      })
+      .fill("#fff");
+
+    draw
+      .text(text.toUpperCase())
+      .move(center, center)
+      .font({
+        family: font,
+        size: `${sizeFontText / 3}px`,
+        anchor: "middle",
+        "dominant-baseline": "middle",
+        x: "50%",
+        y: "64%",
+      })
+      .fill("#fff");
+  })();
+
+  (() => {
+    let draw = SVG()
+      .addTo(el)
+      .size(size / 5, size / 5)
+      .attr({ id: `_${id}-small` });
+
+    draw.rect(size, size).attr({ fill: backgroundColor });
+
+    const gradient = draw
+      .gradient("linear", (ctx) => {
+        polygon.colors.forEach((color, i) =>
+          ctx.stop(i / polygon.colors.length, color)
+        );
+      })
+      .from(0, 0)
+      .to(1, 1);
+
+    draw
+      .circle(size / 5)
+      .move(0, 0)
+      .attr({ fill: gradient })
+      .animate({
+        duration: 20000,
+        times: Infinity,
+      })
+      .ease("-")
+      .rotate(360);
+
+    draw
+      .circle(size2_3 / 5)
+      .move(size1_6 / 5, size1_6 / 5)
+      .attr({ fill: "#000" });
+
+    draw
+      .text(title.toUpperCase())
+      .move(center, center)
+      .font({
+        family: font,
+        size: `${sizeFontTitle / 5}px`,
+        anchor: "middle",
+        "dominant-baseline": "middle",
+        x: "50%",
+        y: "52%",
+      })
+      .fill("#fff");
+  })();
+
+  (() => {
+    let draw = SVG()
+      .addTo(el)
+      .size(size / 10, size / 10)
+      .attr({ id: `_${id}-small` });
+
+    draw.rect(size, size).attr({ fill: backgroundColor });
+
+    const gradient = draw
+      .gradient("linear", (ctx) => {
+        polygon.colors.forEach((color, i) =>
+          ctx.stop(i / polygon.colors.length, color)
+        );
+      })
+      .from(0, 0)
+      .to(1, 1);
+
+    draw
+      .circle(size / 10)
+      .move(0, 0)
+      .attr({ fill: gradient })
+      .animate({
+        duration: 20000,
+        times: Infinity,
+      })
+      .ease("-")
+      .rotate(360);
+
+    draw
+      .circle(size2_3 / 10)
+      .move(size1_6 / 10, size1_6 / 10)
+      .attr({ fill: "#000" });
+
+    draw
+      .text(title[0].toUpperCase())
+      .move(center, center)
+      .font({
+        family: font,
+        size: `${size1_5 / 5}px`,
+        anchor: "middle",
+        "dominant-baseline": "middle",
+        x: "50%",
+        y: "52%",
+      })
+      .fill("#fff");
+  })();
+
+  (() => {
+    let draw = SVG()
+      .addTo(el)
+      .size(size / 14, size / 14)
+      .attr({ id: `_${id}-small` });
+
+    draw.rect(size, size).attr({ fill: backgroundColor });
+
+    draw
+      .circle(size2_3 / 14)
+      .move(size1_6 / 14, size1_6 / 14)
+      .attr({ fill: "#000" });
+
+    draw
+      .text(title[0].toUpperCase())
+      .move(center, center)
+      .font({
+        family: font,
+        size: `${size1_5 / 6}px`,
+        anchor: "middle",
+        "dominant-baseline": "middle",
+        x: "50%",
+        y: "52%",
+      })
+      .fill("#fff");
+  })();
 
   const svgFigure = document.querySelector(`#_${id}`).outerHTML;
 
   document.querySelector(`#_${id}`).addEventListener("click", () => {
     saveText(`logo-${title}-${text}-${id}`, svgFigure, "svg");
-    saveText(`logo-${title}-${text}-${id}-params`, paramsFigure, "json");
   });
 };
 
 const updateFigure = () => {
   const form = document.querySelector(".generation-forms");
   const rawData = new FormData(form);
-  const data = {};
+  const logoParam = {};
   for (let [key, value] of rawData) {
-    data[key] = value;
+    logoParam[key] = value;
   }
 
   setTimeout(() => {
-    saveLS(data);
+    saveLS(logoParam);
   }, 0);
 
   document.querySelector(".generation").innerHTML = "";
 
-  newArray(Number(data.count))
-    .map(() => data)
-    .forEach((logoParam) => {
-      genFigure(logoParam);
-    });
+  genFigure(logoParam);
 };
 
 const initParams = () => {
@@ -231,19 +404,5 @@ document
 document
   .querySelector(".generation-forms")
   .addEventListener("reset", updateFigure);
-
-document
-  .querySelector("[name='loadParams']")
-  .addEventListener("change", (event) => {
-    const uploadedFile = event.target.files[0];
-
-    const readFile = new FileReader();
-    readFile.onload = (e) => {
-      const contents = e.target.result;
-      const logoParam = JSON.parse(contents);
-      genFigure({ el: ".view-zone", ...logoParam });
-    };
-    readFile.readAsText(uploadedFile);
-  });
 
 init();
